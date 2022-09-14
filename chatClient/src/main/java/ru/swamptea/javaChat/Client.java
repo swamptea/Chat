@@ -16,11 +16,15 @@ public class Client implements Runnable {
 
 
     public Client() {
+    }
+
+    public void init() {
         //инициализируем поля, принимаем сообщение от сервера, отправляем ответ
         logger = new Logger("chatClient/log.txt");
         try (BufferedReader reader = new BufferedReader(new FileReader("chatClient/settings.txt"))) {
             port = Integer.parseInt(reader.readLine().split(": ")[1]);
             ipAddress = reader.readLine().split(": ")[1];
+            reader.close();
             clientSocket = new Socket(ipAddress, port);
             out = new PrintWriter(clientSocket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -28,16 +32,17 @@ public class Client implements Runnable {
             printStr("Connection ready... ");
             printStr(in.readLine());
             clientName = systemIn.readLine();
-            out.println("Client connected: " + clientName);
-            out.flush();
-            new Thread(this).start();
         } catch (IOException e) {
             printStr("TCPConnectionException " + e);
         }
+        out.println("Client connected: " + clientName);
+        out.flush();
+        new Thread(this).start();
     }
 
     public static void main(String[] args) {
         Client client = new Client();
+        client.init();
     }
 
     private void printStr(String msg) {
@@ -52,7 +57,9 @@ public class Client implements Runnable {
                 // ожидаем, принимаем и печатаем сообщения
                 while (true) {
                     String msg = in.readLine();
-                    printStr(msg);
+                    if (msg != null && !msg.equals("")) {
+                        printStr(msg);
+                    }
                 }
             } catch (Exception e) {
             }
@@ -76,15 +83,37 @@ public class Client implements Runnable {
 
     public void sendMessageToServer(String msg) throws IOException {
         if (msg.equals("/exit")) {
-            Thread.currentThread().interrupt();
-            printStr("Connection close");
             out.println("Client disconnected: " + clientName);
             out.flush();
+            printStr("Connection close");
+
+            in.close();
+            out.close();
+            systemIn.close();
             clientSocket.close();
-            System.exit(0);
         } else {
             out.println(clientName + ": " + msg);
             out.flush();
         }
+    }
+
+    public void setOut(PrintWriter out) {
+        this.out = out;
+    }
+
+    public void setIn(BufferedReader in) {
+        this.in = in;
+    }
+
+    public void setSystemIn(BufferedReader systemIn) {
+        this.systemIn = systemIn;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+
+    public void setClientSocket(Socket clientSocket) {
+        this.clientSocket = clientSocket;
     }
 }

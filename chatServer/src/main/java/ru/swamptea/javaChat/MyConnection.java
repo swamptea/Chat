@@ -27,9 +27,6 @@ public class MyConnection implements Runnable {
                 // Если от клиента пришло сообщение, отправляем его всем клиентам
                 String msg = in.readLine();
                 if (msg != null && !msg.equals("")) {
-                    if (msg.equals("/exit")) {
-                        break;
-                    }
                     server.onReceiveString(this, msg);
                 }
             }
@@ -55,6 +52,8 @@ public class MyConnection implements Runnable {
         Thread.currentThread().interrupt();
         server.onDisconnect(this);
         try {
+            in.close();
+            out.close();
             clientSocket.close();
         } catch (IOException e) {
             server.onException(this, e);
