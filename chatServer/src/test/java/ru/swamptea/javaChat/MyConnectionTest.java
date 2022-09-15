@@ -9,9 +9,9 @@ import java.io.*;
 import java.net.Socket;
 
 public class MyConnectionTest {
-    @ParameterizedTest
-    @CsvSource("Test String")
-    void sendStringTest(String msg) throws IOException {
+    @Test
+    void sendStringTest() throws IOException {
+        String testString = "Test String";
         Socket socket = Mockito.mock(Socket.class);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ByteArrayInputStream in = Mockito.mock(ByteArrayInputStream.class);
@@ -19,7 +19,7 @@ public class MyConnectionTest {
         Mockito.when(socket.getOutputStream()).thenReturn(out);
         Server server = Mockito.mock(Server.class);
         MyConnection connection = new MyConnection(server, socket);
-        connection.sendMessage(msg);
-        Assertions.assertEquals(msg + "\n", out.toString());
+        connection.sendMessage(testString);
+        Assertions.assertEquals(testString + "\n", out.toString());
     }
 }
